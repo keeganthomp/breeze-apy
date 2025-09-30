@@ -99,7 +99,7 @@ function DashboardContent() {
   );
 }
 
-export default function BreezyDashboard() {
+export default function BreezeDashboard() {
   return (
     <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-8 max-w-6xl space-y-5">
