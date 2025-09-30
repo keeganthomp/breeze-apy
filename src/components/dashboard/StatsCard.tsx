@@ -1,31 +1,18 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { formatNumber, formatPercent } from "@/lib/utils";
+import { formatNumber, formatPercent, slicePublicKey } from "@/lib/utils";
 import type { MetricsSuccessResponse } from "@/types/api";
-import { DEFAULT_FUND_LABEL } from "@/constans";
 
 interface StatsCardProps {
   metrics: MetricsSuccessResponse | null;
+  portfolioValue: number;
 }
 
-export function StatsCard({ metrics }: StatsCardProps) {
+export function StatsCard({ metrics, portfolioValue }: StatsCardProps) {
   const baseAsset = metrics?.summary.baseAsset ?? "USDC";
   const totalYieldEarned = metrics?.summary.totalYieldEarned ?? 0;
-  const portfolioValue = metrics?.summary.totalPortfolioValue ?? 0;
   const currentApy = metrics?.summary.currentApy ?? 0;
 
-  const derivedFundName = (() => {
-    const rawEntries = metrics?.raw?.userYield?.data;
-    if (!Array.isArray(rawEntries) || rawEntries.length === 0) {
-      return undefined;
-    }
-
-    const name = rawEntries[0]?.fund_name;
-    return typeof name === "string" && name.trim().length > 0
-      ? name
-      : undefined;
-  })();
-
-  const fundDisplay = derivedFundName ?? metrics?.fundId ?? DEFAULT_FUND_LABEL;
+  const fundDisplayName = slicePublicKey(metrics?.fundId);
 
   const cadenceBreakdown = (() => {
     const estimatedAnnualEarnings = portfolioValue * (currentApy / 100);
@@ -41,12 +28,14 @@ export function StatsCard({ metrics }: StatsCardProps) {
 
   return (
     <Card className="h-full">
-      <CardHeader className="space-y-3 pb-4">
-        <span className="text-xs font-semibold uppercase tracking-[0.28em] text-bright-pink">
-          Total Earned
-        </span>
-        <p className="text-3xl font-semibold text-deep-purple">
-          +{formatNumber(totalYieldEarned)} {baseAsset}
+      <CardHeader className="space-y-6 pb-6">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold uppercase tracking-[0.28em] text-bright-pink">
+            Total Earned
+          </span>
+        </div>
+        <p className="text-2xl font-semibold text-deep-purple truncate">
+          +{totalYieldEarned} {baseAsset}
         </p>
         <p className="text-sm text-muted-foreground font-light">
           Projected earnings across multiple cadences
@@ -79,12 +68,14 @@ export function StatsCard({ metrics }: StatsCardProps) {
           <div className="flex items-center justify-between">
             <span>Portfolio Value</span>
             <span className="font-semibold text-foreground">
-              {formatNumber(portfolioValue)} {baseAsset}
+              ${formatNumber(portfolioValue)}
             </span>
           </div>
           <div className="flex items-center justify-between">
             <span>Fund</span>
-            <span className="font-semibold text-foreground">{fundDisplay}</span>
+            <span className="font-semibold text-foreground">
+              {fundDisplayName}
+            </span>
           </div>
         </div>
       </CardContent>

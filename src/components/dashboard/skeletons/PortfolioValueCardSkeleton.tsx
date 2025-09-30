@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function APYCardSkeleton() {
+export function PortfolioValueCardSkeleton() {
   return (
     <div className="flex h-full w-full flex-col space-y-4">
       <Skeleton className="h-3 w-28" />

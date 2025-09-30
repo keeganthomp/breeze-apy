@@ -9,6 +9,7 @@ import {
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
 import { clusterApiUrl } from "@solana/web3.js";
 import { Toaster } from "sonner";
+import { SOLANA_RPC_CLUSTER } from "@/constants";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -23,7 +24,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       })
   );
 
-  const endpoint = useMemo(() => clusterApiUrl("devnet"), []);
+  const endpoint = useMemo(() => clusterApiUrl(SOLANA_RPC_CLUSTER), []);
   const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
 
   return (
@@ -32,12 +33,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <WalletProvider wallets={wallets} autoConnect>
           {children}
           <Toaster
-            position="top-right"
+            position="bottom-right"
             richColors
             expand={false}
-            closeButton
-            theme="system"
-            duration={4000}
+            theme="light"
+            duration={3250}
           />
         </WalletProvider>
       </ConnectionProvider>

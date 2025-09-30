@@ -3,7 +3,7 @@ import {
   type ApiErrorResponse,
   type MetricsSuccessResponse,
 } from "@/types/api";
-import { QUERY_KEYS } from "@/constans";
+import { QUERY_KEYS } from "@/constants";
 
 type UseMetricsParams = {
   userId: string;
@@ -13,13 +13,13 @@ type UseMetricsParams = {
 // Hook for fetching single-fund metrics data
 export function useMetrics({ userId, enabled = true }: UseMetricsParams) {
   return useQuery({
-    queryKey: [...QUERY_KEYS.metrics, userId || "anonymous"],
+    queryKey: QUERY_KEYS.metrics,
     queryFn: async (): Promise<MetricsSuccessResponse> => {
       if (!userId) {
         throw new Error("Unable to load metrics: userId is required");
       }
 
-      const endpoint = `/api/metrics/${encodeURIComponent(userId)}`;
+      const endpoint = `/api/yield-metrics/${encodeURIComponent(userId)}`;
 
       const response = await fetch(endpoint);
       const payload: MetricsSuccessResponse | ApiErrorResponse =

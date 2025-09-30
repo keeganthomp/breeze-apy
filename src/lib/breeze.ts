@@ -1,4 +1,5 @@
 import { BreezeSDK } from "@breezebaby/breeze-sdk";
+import { USDC_FUND } from "@/constants";
 
 type BreezeSdkConfig = {
   apiKey: string;
@@ -54,15 +55,9 @@ export type {
 } from "@breezebaby/breeze-sdk";
 
 export function getDefaultBreezeContext() {
-  const userId = process.env.BREEZE_USER_ID;
-  const userKey = process.env.BREEZE_USER_KEY ?? userId;
-  const fundId = process.env.BREEZE_FUND_ID;
-  const payerKey = process.env.BREEZE_PAYER_KEY ?? userKey ?? undefined;
+  const fund = USDC_FUND;
 
   return {
-    userId,
-    userKey,
-    fundId,
-    payerKey,
+    fund,
   } as const;
 }

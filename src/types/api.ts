@@ -21,9 +21,7 @@ export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
 
 export type TransactionRequestPayload = {
   amount: number | string;
-  fundId?: string;
-  userKey?: string;
-  payerKey?: string;
+  userId?: string;
   all?: boolean | string;
 };
 
@@ -40,7 +38,8 @@ export type TransactionSuccessPayload = {
   metadata: TransactionMetadata;
 };
 
-export type TransactionSuccessResponse = ApiSuccessResponse<TransactionSuccessPayload>;
+export type TransactionSuccessResponse =
+  ApiSuccessResponse<TransactionSuccessPayload>;
 export type TransactionErrorResponse = ApiErrorResponse;
 
 export type DepositRequestPayload = TransactionRequestPayload;
@@ -53,12 +52,11 @@ export type MetricsSummary = {
   currentApy?: number;
   totalYieldEarned: number;
   totalPositionValue: number;
-  totalPortfolioValue: number;
   lastUpdated?: string;
   baseAsset?: string;
 };
 
-export type MetricsBalanceEntry = {
+export type TokenBalanceEntry = {
   tokenAddress: string;
   tokenSymbol: string;
   tokenName: string;
@@ -77,15 +75,25 @@ export type MetricsSuccessPayload = {
   userId: string;
   fundId?: string;
   summary: MetricsSummary;
-  balances: MetricsBalanceEntry[];
   raw: {
     userYield: UserYield;
-    userBalances: UserBalances;
   };
 };
 
 export type MetricsSuccessResponse = ApiSuccessResponse<MetricsSuccessPayload>;
 export type MetricsErrorResponse = ApiErrorResponse;
+
+export type TokenBalancesSuccessPayload = {
+  userId: string;
+  balances: TokenBalanceEntry[];
+  raw: {
+    usdc: UserBalances;
+  };
+};
+
+export type TokenBalancesSuccessResponse =
+  ApiSuccessResponse<TokenBalancesSuccessPayload>;
+export type TokenBalancesErrorResponse = ApiErrorResponse;
 
 export type InstructionsResponse =
   | InstructionsForDeposit

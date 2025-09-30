@@ -1,41 +1,33 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import type { MetricsSuccessResponse } from "@/types/api";
+import type { TokenBalanceEntry } from "@/types/api";
 import { DepositForm } from "./DepositForm";
-import { WithdrawForm } from "./WithdrawForm";
+import { cn } from "@/lib/utils";
 
 interface ManagePositionsCardProps {
-  metrics: MetricsSuccessResponse | null;
-  fundLabel?: string | null;
+  tokenBalances: TokenBalanceEntry[] | null;
+  className?: string;
 }
 
 export function ManagePositionsCard({
-  metrics,
+  tokenBalances,
+  className,
 }: ManagePositionsCardProps) {
-  const baseAsset = metrics?.summary.baseAsset ?? "USDC";
-  const canTransact = Boolean(metrics?.fundId);
+  const baseAsset = tokenBalances?.[0]?.tokenSymbol ?? "USDC";
 
   return (
-    <Card>
-      <CardHeader className="pb-4">
-        <span className="text-xs font-semibold uppercase tracking-[0.32em] text-bright-pink">
-          Capital Allocation
-        </span>
+    <Card className={cn("flex h-full flex-col justify-between", className)}>
+      <CardHeader className="space-y-5 pb-6">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold uppercase tracking-[0.32em] text-bright-pink">
+            Capital Allocation
+          </span>
+        </div>
         <p className="text-sm text-muted-foreground font-light">
-          Allocate more capital into the Breeze fund or redeem funds
+          Allocate more capital into the Breeze fund to increase your returns
         </p>
       </CardHeader>
       <CardContent className="space-y-5">
-        {canTransact ? (
-          <div className="grid gap-5 md:grid-cols-2">
-            <DepositForm metrics={metrics} baseAsset={baseAsset} />
-            <WithdrawForm metrics={metrics} baseAsset={baseAsset} />
-          </div>
-        ) : (
-          <p className="rounded-xl border border-dashed border-border/60 bg-white/80 p-6 text-sm text-muted-foreground">
-            Fund information is unavailable right now. Connect your wallet or
-            refresh to try again.
-          </p>
-        )}
+        <DepositForm baseAsset={baseAsset} balances={tokenBalances} />
       </CardContent>
     </Card>
   );

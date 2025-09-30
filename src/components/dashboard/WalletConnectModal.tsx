@@ -203,7 +203,7 @@ export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
       >
         <div className="mb-6 flex items-start justify-between gap-6">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-deep-purple dark:text-white">
               Connect Wallet
             </h2>
             <p className="text-sm text-slate-600 dark:text-slate-400">

@@ -1,26 +1,25 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
   type TransactionErrorResponse,
   type TransactionSuccessResponse,
 } from "@/types/api";
-import { QUERY_KEYS } from "@/constans";
 
-// Hook for withdraw mutation
+// Hook for withdraw txn mutation
 export function useWithdraw() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async ({
       amount,
       fundId,
+      userId,
     }: {
       amount: number;
       fundId?: string;
+      userId: string;
     }): Promise<TransactionSuccessResponse> => {
-      const response = await fetch("/api/withdraw", {
+      const response = await fetch("/api/withdraw/txn", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount, fundId }),
+        body: JSON.stringify({ amount, fundId, userId }),
       });
 
       const payload: TransactionSuccessResponse | TransactionErrorResponse =
@@ -32,10 +31,6 @@ export function useWithdraw() {
       }
 
       return payload;
-    },
-    onSuccess: () => {
-      // Invalidate and refetch metrics after successful withdrawal
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.metrics });
     },
   });
 }

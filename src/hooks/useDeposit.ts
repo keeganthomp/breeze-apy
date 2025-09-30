@@ -1,26 +1,25 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
   type TransactionErrorResponse,
   type TransactionSuccessResponse,
 } from "@/types/api";
-import { QUERY_KEYS } from "@/constans";
 
-// Hook for deposit mutation
+// Hook for deposit txn mutation
 export function useDeposit() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async ({
       amount,
       fundId,
+      userId,
     }: {
       amount: number;
+      userId: string;
       fundId?: string;
     }): Promise<TransactionSuccessResponse> => {
-      const response = await fetch("/api/deposit", {
+      const response = await fetch("/api/deposit/txn", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount, fundId }),
+        body: JSON.stringify({ amount, fundId, userId }),
       });
 
       const payload: TransactionSuccessResponse | TransactionErrorResponse =
@@ -32,10 +31,6 @@ export function useDeposit() {
       }
 
       return payload;
-    },
-    onSuccess: () => {
-      // Invalidate and refetch metrics after successful deposit
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.metrics });
     },
   });
 }

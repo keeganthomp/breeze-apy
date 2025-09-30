@@ -3,13 +3,13 @@ import { BreezeApiError } from "@breezebaby/breeze-sdk";
 
 import { getBreezeSdk, getDefaultBreezeContext } from "@/lib/breeze";
 import {
+  DepositRequestPayload,
+  DepositSuccessResponse,
   TransactionErrorResponse,
-  TransactionRequestPayload,
-  WithdrawSuccessResponse,
 } from "@/types/api";
 
 export async function POST(request: NextRequest) {
-  let body: TransactionRequestPayload;
+  let body: DepositRequestPayload;
 
   try {
     body = await request.json();
@@ -25,31 +25,34 @@ export async function POST(request: NextRequest) {
   }
 
   const amountValue =
-    typeof body.amount === "string" ? Number.parseFloat(body.amount) : body.amount;
+    typeof body.amount === "string"
+      ? Number.parseFloat(body.amount)
+      : body.amount;
 
   if (!Number.isFinite(amountValue) || amountValue <= 0) {
     return NextResponse.json<TransactionErrorResponse>(
       {
         success: false,
-        error: "Withdrawal amount must be a positive number",
+        error: "Deposit amount must be a positive number",
       },
       { status: 400 }
     );
   }
 
-  const { fundId: defaultFundId, userKey: defaultUserKey, payerKey: defaultPayerKey } =
-    getDefaultBreezeContext();
+  const { fund: defaultFund } = getDefaultBreezeContext();
 
-  const fundId = body.fundId?.trim() || defaultFundId;
-  const userKey = body.userKey?.trim() || defaultUserKey;
-  const payerKey = body.payerKey?.trim() || defaultPayerKey;
-  const allFlag = typeof body.all === "string" ? body.all === "true" : Boolean(body.all);
+  const fundId = defaultFund.id;
+  const userKey = body.userId?.trim();
+  const payerKey = userKey;
+  const allFlag =
+    typeof body.all === "string" ? body.all === "true" : Boolean(body.all);
 
   if (!fundId) {
     return NextResponse.json<TransactionErrorResponse>(
       {
         success: false,
-        error: "fundId is required. Provide it in the request body or configure BREEZE_FUND_ID.",
+        error:
+          "fundId is required. Provide it in the request body or configure BREEZE_FUND_ID.",
       },
       { status: 400 }
     );
@@ -59,7 +62,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json<TransactionErrorResponse>(
       {
         success: false,
-        error: "userKey is required. Provide it in the request body or configure BREEZE_USER_KEY/BREEZE_USER_ID.",
+        error:
+          "userKey is required. Provide it in the request body or configure BREEZE_USER_KEY/BREEZE_USER_ID.",
       },
       { status: 400 }
     );
@@ -67,7 +71,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const sdk = getBreezeSdk();
-    const transaction = await sdk.createWithdrawTransaction({
+    const transaction = await sdk.createDepositTransaction({
       fundId,
       userKey,
       amount: amountValue,
@@ -86,7 +90,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json<WithdrawSuccessResponse>({
+    return NextResponse.json<DepositSuccessResponse>({
       success: true,
       transaction,
       metadata: {

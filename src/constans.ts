@@ -1,9 +1,0 @@
-export const QUERY_KEYS = {
-  metrics: ["metrics"] as const,
-};
-
-export const SOLANA_MINT_ADDRESS =
-  "So11111111111111111111111111111111111111112";
-export const USDC_MINT_ADDRESS = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-
-export const DEFAULT_FUND_LABEL = "Breeze Fund";
