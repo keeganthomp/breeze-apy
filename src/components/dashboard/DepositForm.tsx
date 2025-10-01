@@ -77,7 +77,7 @@ export function DepositForm({ baseAsset }: DepositFormProps) {
           }
         })(),
         {
-          loading: "Depositing funds…",
+          loading: "Please confirm the deposit transaction",
           success: "Deposit successful!",
           error: (error: unknown) =>
             error instanceof Error ? error.message : "Deposit failed",

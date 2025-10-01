@@ -77,7 +77,7 @@ export function WithdrawModal({
   const isSubmitDisabled = !fundId || !validation.isValid;
 
   const helperMessage = hasAvailableBalance
-    ? `Available: ${formatNumber(availableBalance)} ${baseAsset}`
+    ? `Available to withdraw: ${formatNumber(availableBalance)} ${baseAsset}`
     : `Enter the amount you want to withdraw in ${baseAsset}.`;
 
   const handleSubmit = useCallback(
@@ -113,7 +113,7 @@ export function WithdrawModal({
           invalidateDashboardData({ delay: 500 });
         })(),
         {
-          loading: "Withdrawing funds…",
+          loading: "Please confirm the withdrawal transaction",
           success: "Withdrawal successful!",
           error: (submissionError: unknown) =>
             submissionError instanceof Error
@@ -160,7 +160,7 @@ export function WithdrawModal({
           <div className="space-y-1">
             <h2
               id={`${amountInputId}-title`}
-              className="text-lg font-semibold text-foreground"
+              className="text-lg font-semibold text-deep-purple"
             >
               Withdraw funds
             </h2>
@@ -183,7 +183,10 @@ export function WithdrawModal({
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
           <div className="space-y-2">
-            <Label htmlFor={amountInputId} className="text-sm font-medium">
+            <Label
+              htmlFor={amountInputId}
+              className="text-sm font-medium text-deep-purple"
+            >
               Withdraw Amount ({baseAsset})
             </Label>
             <Input
@@ -244,7 +247,11 @@ export function WithdrawModal({
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitDisabled}>
+            <Button
+              type="submit"
+              className="bg-bright-pink text-white hover:bg-bright-pink/90"
+              disabled={isSubmitDisabled}
+            >
               Withdraw
             </Button>
           </div>

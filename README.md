@@ -34,4 +34,4 @@ The app serves on http://localhost:3000. Connect your wallet via the modal to lo
 
 ## Project Notes
 - React Query caches portfolio metrics and token balances; use the in-app refresh control or rerun queries by refreshing the page.
-- UI components are built with Tailwind CSS utilities and Lucide icons.
+- UI components are built with Tailwind CSS utilities, Shadcdn components, and Lucide icons.
