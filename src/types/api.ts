@@ -51,7 +51,7 @@ export type WithdrawSuccessResponse = TransactionSuccessResponse;
 export type MetricsSummary = {
   currentApy?: number;
   totalYieldEarned: number;
-  totalPositionValue: number;
+  totalPositionValue?: number;
   lastUpdated?: string;
   baseAsset?: string;
 };

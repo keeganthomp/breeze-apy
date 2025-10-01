@@ -10,10 +10,22 @@ import {
   type MetricsErrorResponse,
   type MetricsSuccessResponse,
 } from "@/types/api";
-import { toNumber } from "@/lib/utils";
 import { USDC_DECIMALS } from "@/constants";
 
 type BreezeYieldData = UserYield["data"][number];
+
+// The types exported from the Breeze SDK do not match the types in the API response.
+// This function is a workaround to get the property from the yield entry while maintaining type safety.
+// ew
+const getYieldProperty = (
+  yieldEntry = {} as BreezeYieldData,
+  property: keyof BreezeYieldData,
+  requiredType = "string" as "string" | "number"
+): string | number | undefined => {
+  return typeof yieldEntry[property] === requiredType
+    ? yieldEntry[property]
+    : undefined;
+};
 
 export async function GET(
   _request: NextRequest,
@@ -42,45 +54,29 @@ export async function GET(
     const userYield = await sdk.getUserYield({ userId, fundId });
 
     const yieldEntries = userYield.data ?? [];
+    // unsure if we always want the first entry - but this is what I see in the API response consistantly
+    const yieldEntry = yieldEntries[0];
 
+    const yieldEarned = getYieldProperty(yieldEntry, "yield_earned", "number");
+    const totalPositionValue = getYieldProperty(
+      yieldEntry,
+      "position_value",
+      "number"
+    ) as number;
+    const currentApy = getYieldProperty(yieldEntry, "apy", "number") as number;
+    const lastUpdated = getYieldProperty(yieldEntry, "last_updated") as string;
+    const baseAsset = getYieldProperty(yieldEntry, "base_asset") as string;
     // hack: take integer part and convert to proper decimal position
-    const rawYieldEarnedString = yieldEntries[0]?.yield_earned?.toString();
+    const rawYieldEarnedString = yieldEarned?.toString();
     const integerPart = rawYieldEarnedString?.split(".")[0] ?? "0";
     const integerPartNumber = parseInt(integerPart);
-
     // Convert integer to proper decimal: 3 -> 0.000003, 30 -> 0.00003, etc.
     const totalYieldEarned = integerPartNumber / 10 ** USDC_DECIMALS;
-
-    const totalPositionValue = yieldEntries.reduce(
-      (total, entry: BreezeYieldData) => {
-        return total + toNumber(entry.position_value);
-      },
-      0
-    );
-
-    const currentApy = yieldEntries.length
-      ? toNumber(yieldEntries[0]?.apy)
-      : undefined;
-    const lastUpdated = yieldEntries.length
-      ? typeof yieldEntries[0]?.last_updated === "string"
-        ? yieldEntries[0]?.last_updated
-        : undefined
-      : undefined;
-    const baseAsset =
-      yieldEntries.length && typeof yieldEntries[0]?.base_asset === "string"
-        ? yieldEntries[0]?.base_asset
-        : undefined;
-
-    const resolvedFundId =
-      fundId ||
-      (yieldEntries.length && typeof yieldEntries[0]?.fund_id === "string"
-        ? yieldEntries[0]?.fund_id
-        : undefined);
 
     return NextResponse.json<MetricsSuccessResponse>({
       success: true,
       userId,
-      fundId: resolvedFundId,
+      fundId,
       summary: {
         currentApy,
         totalYieldEarned,
