@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useState } from "react";
+import { useCallback, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { toast } from "sonner";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatNumber, prepareTransaction, toAtomicUnits } from "@/lib/utils";
-import { useWithdraw } from "@/hooks";
+import { useRefetchData, useWithdraw } from "@/hooks";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useAmountValidation } from "@/hooks/useAmountValidation";
 import { useModalManager } from "@/hooks/useModalManager";
@@ -18,8 +18,7 @@ import {
   createAriaDescribedBy,
 } from "@/lib/formUtils";
 
-import { QUERY_KEYS, USDC_DECIMALS } from "@/constants";
-import { useQueryClient } from "@tanstack/react-query";
+import { USDC_DECIMALS } from "@/constants";
 
 interface WithdrawModalProps {
   isOpen: boolean;
@@ -44,11 +43,22 @@ export function WithdrawModal({
   const { connection } = useConnection();
   const withdrawMutation = useWithdraw();
   const { reset } = withdrawMutation;
-  const { inputRef } = useModalManager({ isOpen, onClose });
-  const queryClient = useQueryClient();
+  const { invalidateDashboardData } = useRefetchData();
 
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [hasBlurredAmount, setHasBlurredAmount] = useState(false);
+
+  const handleRequestClose = useCallback(() => {
+    setWithdrawAmount("");
+    setHasBlurredAmount(false);
+    reset();
+    onClose();
+  }, [onClose, reset]);
+
+  const { inputRef } = useModalManager({
+    isOpen,
+    onClose: handleRequestClose,
+  });
 
   const validation = useAmountValidation({
     amount: withdrawAmount,
@@ -70,15 +80,6 @@ export function WithdrawModal({
     ? `Available: ${formatNumber(availableBalance)} ${baseAsset}`
     : `Enter the amount you want to withdraw in ${baseAsset}.`;
 
-  // Reset form when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setWithdrawAmount("");
-      setHasBlurredAmount(false);
-      reset();
-    }
-  }, [isOpen, reset]);
-
   const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -92,37 +93,24 @@ export function WithdrawModal({
       }
 
       // Close the modal while we run the asynchronous workflow
-      onClose();
+      handleRequestClose();
 
       toast.promise(
         (async () => {
-          try {
-            const atomicAmount = toAtomicUnits(
-              validation.parsedAmount,
-              USDC_DECIMALS
-            );
+          const atomicAmount = toAtomicUnits(
+            validation.parsedAmount,
+            USDC_DECIMALS
+          );
 
-            const { transaction } = await withdrawMutation.mutateAsync({
-              amount: atomicAmount,
-              fundId,
-              userId: publicKey?.toBase58() ?? "",
-            });
-            const preparedTransaction = prepareTransaction(transaction);
-            await sendTransaction(preparedTransaction, connection);
+          const { transaction } = await withdrawMutation.mutateAsync({
+            amount: atomicAmount,
+            fundId,
+            userId: publicKey?.toBase58() ?? "",
+          });
+          const preparedTransaction = prepareTransaction(transaction);
+          await sendTransaction(preparedTransaction, connection);
 
-            setWithdrawAmount("");
-
-            setTimeout(() => {
-              queryClient.invalidateQueries({
-                queryKey: QUERY_KEYS.metrics,
-              });
-              queryClient.invalidateQueries({
-                queryKey: QUERY_KEYS.tokenBalances,
-              });
-            }, 500);
-          } finally {
-            setHasBlurredAmount(false);
-          }
+          invalidateDashboardData({ delay: 500 });
         })(),
         {
           loading: "Withdrawing funds…",
@@ -141,8 +129,8 @@ export function WithdrawModal({
       publicKey,
       connection,
       sendTransaction,
-      onClose,
-      queryClient,
+      handleRequestClose,
+      invalidateDashboardData,
     ]
   );
 
@@ -162,7 +150,7 @@ export function WithdrawModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby={`${amountInputId}-title`}
-      onClick={onClose}
+      onClick={handleRequestClose}
     >
       <div
         className="w-full max-w-md rounded-2xl border border-border/60 bg-white p-6 shadow-xl"
@@ -186,7 +174,7 @@ export function WithdrawModal({
             variant="ghost"
             size="icon"
             className="text-muted-foreground"
-            onClick={onClose}
+            onClick={handleRequestClose}
           >
             <X className="size-5" aria-hidden />
             <span className="sr-only">Close withdraw modal</span>

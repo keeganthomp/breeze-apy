@@ -6,14 +6,16 @@ import {
 import { QUERY_KEYS } from "@/constants";
 
 type UseMetricsParams = {
-  userId: string;
+  userId: string | null | undefined;
   enabled?: boolean;
 };
 
 // Hook for fetching single-fund metrics data
 export function useMetrics({ userId, enabled = true }: UseMetricsParams) {
   return useQuery({
-    queryKey: QUERY_KEYS.metrics,
+    queryKey: userId
+      ? QUERY_KEYS.metrics.byUser(userId)
+      : QUERY_KEYS.metrics.all,
     queryFn: async (): Promise<MetricsSuccessResponse> => {
       if (!userId) {
         throw new Error("Unable to load metrics: userId is required");
@@ -34,6 +36,6 @@ export function useMetrics({ userId, enabled = true }: UseMetricsParams) {
 
       return payload;
     },
-    enabled: enabled && !!userId,
+    enabled: Boolean(enabled && userId),
   });
 }

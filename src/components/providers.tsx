@@ -38,6 +38,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             expand={false}
             theme="light"
             duration={3250}
+            closeButton
           />
         </WalletProvider>
       </ConnectionProvider>

@@ -1,6 +1,10 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { formatNumber, formatPercent, slicePublicKey } from "@/lib/utils";
 import type { MetricsSuccessResponse } from "@/types/api";
+import { Copy } from "lucide-react";
+import { toast } from "sonner";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 interface StatsCardProps {
   metrics: MetricsSuccessResponse | null;
@@ -8,11 +12,36 @@ interface StatsCardProps {
 }
 
 export function StatsCard({ metrics, portfolioValue }: StatsCardProps) {
+  const { publicKey } = useWallet();
   const baseAsset = metrics?.summary.baseAsset ?? "USDC";
   const totalYieldEarned = metrics?.summary.totalYieldEarned ?? 0;
   const currentApy = metrics?.summary.currentApy ?? 0;
 
   const fundDisplayName = slicePublicKey(metrics?.fundId);
+  const userAddress = publicKey?.toBase58();
+  const userDisplayName = slicePublicKey(userAddress);
+
+  const handleCopyFundId = async () => {
+    if (!metrics?.fundId) return;
+
+    try {
+      await navigator.clipboard.writeText(metrics.fundId);
+      toast.success("Fund ID copied to clipboard");
+    } catch {
+      toast.error("Failed to copy Fund ID");
+    }
+  };
+
+  const handleCopyUserId = async () => {
+    if (!userAddress) return;
+
+    try {
+      await navigator.clipboard.writeText(userAddress);
+      toast.success("User ID copied to clipboard");
+    } catch {
+      toast.error("Failed to copy User ID");
+    }
+  };
 
   const cadenceBreakdown = (() => {
     const estimatedAnnualEarnings = portfolioValue * (currentApy / 100);
@@ -58,7 +87,7 @@ export function StatsCard({ metrics, portfolioValue }: StatsCardProps) {
           ))}
         </dl>
 
-        <div className="space-y-3 border-t border-border/40 pt-4 text-xs text-muted-foreground">
+        <div className="space-y-3 pt-4 text-xs text-muted-foreground">
           <div className="flex items-center justify-between">
             <span>Current APY</span>
             <span className="font-semibold text-foreground">
@@ -66,15 +95,43 @@ export function StatsCard({ metrics, portfolioValue }: StatsCardProps) {
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span>Portfolio Value</span>
+            <span>Amount Earning Yield</span>
             <span className="font-semibold text-foreground">
               ${formatNumber(portfolioValue)}
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span>Fund</span>
+            <div className="flex items-center">
+              <span>Fund ID</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCopyFundId}
+                className="h-3 w-3 p-0 text-muted-foreground/70 hover:bg-muted/50 ml-2"
+                disabled={!metrics?.fundId}
+              >
+                <Copy className="h-2 w-2" />
+              </Button>
+            </div>
             <span className="font-semibold text-foreground">
               {fundDisplayName}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <span>User ID</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCopyUserId}
+                className="h-3 w-3 p-0 text-muted-foreground/70 hover:bg-muted/50 ml-2"
+                disabled={!userAddress}
+              >
+                <Copy className="h-2 w-2" />
+              </Button>
+            </div>
+            <span className="font-semibold text-foreground">
+              {userDisplayName}
             </span>
           </div>
         </div>

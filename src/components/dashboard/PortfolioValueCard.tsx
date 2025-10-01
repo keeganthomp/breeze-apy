@@ -56,13 +56,15 @@ export function PortfolioValueCard({
           ${formatNumber(portfolioValue)}
         </div>
       </CardHeader>
-      <WithdrawModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        baseAsset={baseAsset}
-        fundId={fundId}
-        availableBalance={availableBalance}
-      />
+      {isModalOpen ? (
+        <WithdrawModal
+          isOpen
+          onClose={handleCloseModal}
+          baseAsset={baseAsset}
+          fundId={fundId}
+          availableBalance={availableBalance}
+        />
+      ) : null}
     </Card>
   );
 }

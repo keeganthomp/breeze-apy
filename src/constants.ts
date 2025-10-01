@@ -1,8 +1,14 @@
 import { Fund } from "./types/fund";
 
 export const QUERY_KEYS = {
-  metrics: ["metrics"] as const,
-  tokenBalances: ["token-balances"] as const,
+  metrics: {
+    all: ["metrics"] as const,
+    byUser: (userId: string) => ["metrics", userId] as const,
+  },
+  tokenBalances: {
+    all: ["token-balances"] as const,
+    byUser: (userId: string) => ["token-balances", userId] as const,
+  },
 };
 
 export const USDC_MINT_ADDRESS = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";

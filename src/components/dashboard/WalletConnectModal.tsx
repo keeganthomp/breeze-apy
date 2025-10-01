@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { createPortal } from "react-dom";
 import { WalletReadyState } from "@solana/wallet-adapter-base";
@@ -87,7 +87,6 @@ const WalletOption = ({
 };
 
 export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
-  const [mounted, setMounted] = useState(false);
   const [pendingWallet, setPendingWallet] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const {
@@ -100,11 +99,6 @@ export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
     wallet,
     publicKey,
   } = useWallet();
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -121,25 +115,6 @@ export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
 
     window.addEventListener("keydown", handleKeydown);
     return () => window.removeEventListener("keydown", handleKeydown);
-  }, [open, onClose]);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    function handleClick(event: MouseEvent) {
-      if (
-        modalRef.current &&
-        event.target instanceof Node &&
-        !modalRef.current.contains(event.target)
-      ) {
-        onClose();
-      }
-    }
-
-    window.addEventListener("mousedown", handleClick);
-    return () => window.removeEventListener("mousedown", handleClick);
   }, [open, onClose]);
 
   const availableWallets = useMemo(
@@ -191,15 +166,27 @@ export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
     }
   }, [disconnect, onClose]);
 
-  if (!mounted || !open) {
+  const portalContainer =
+    typeof document !== "undefined" ? document.body : null;
+
+  if (!open || !portalContainer) {
     return null;
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm"
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+      role="dialog"
+      aria-modal="true"
+    >
       <div
-        ref={modalRef}
         className="relative w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl shadow-slate-900/20 dark:bg-slate-900 dark:shadow-black/40"
+        onPointerDown={(event) => event.stopPropagation()}
       >
         <div className="mb-6 flex items-start justify-between gap-6">
           <div>

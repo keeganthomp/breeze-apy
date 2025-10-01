@@ -1,8 +1,10 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import { useWallet } from "@solana/wallet-adapter-react";
+
+import { useRefetchData } from "@/hooks";
 
 type AuthGuardProps = {
   children: ReactNode;
@@ -10,6 +12,13 @@ type AuthGuardProps = {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const { connected } = useWallet();
+  const { removeDashboardData } = useRefetchData();
+
+  useEffect(() => {
+    if (!connected) {
+      removeDashboardData();
+    }
+  }, [connected, removeDashboardData]);
 
   if (!connected) {
     return (

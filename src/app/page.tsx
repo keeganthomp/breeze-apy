@@ -1,6 +1,6 @@
 "use client";
-import { useCallback, useMemo, useState } from "react";
-import { useMetrics, useTokenBalances } from "@/hooks";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMetrics, useRefetchData, useTokenBalances } from "@/hooks";
 import {
   Header,
   ErrorDisplay,
@@ -22,7 +22,32 @@ import { Loader2, RotateCw } from "lucide-react";
 
 function DashboardContent() {
   const { publicKey, connecting, connected } = useWallet();
-  const userId = publicKey?.toString() ?? "";
+  const userId = publicKey?.toBase58() ?? null;
+  const previousUserIdRef = useRef<string | null>(null);
+  const { invalidateDashboardData, removeDashboardData } = useRefetchData();
+
+  const handleWalletAccountChange = useCallback(
+    (nextUserId: string | null) => {
+      const previousUserId = previousUserIdRef.current;
+
+      if (!nextUserId && previousUserId) {
+        removeDashboardData();
+      } else if (
+        nextUserId &&
+        previousUserId &&
+        nextUserId !== previousUserId
+      ) {
+        invalidateDashboardData();
+      }
+
+      previousUserIdRef.current = nextUserId;
+    },
+    [invalidateDashboardData, removeDashboardData]
+  );
+
+  useEffect(() => {
+    handleWalletAccountChange(userId);
+  }, [userId, handleWalletAccountChange]);
 
   const {
     data: metrics,

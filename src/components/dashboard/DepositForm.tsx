@@ -4,15 +4,14 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useDeposit } from "@/hooks";
+import { useDeposit, useRefetchData } from "@/hooks";
 import { toAtomicUnits, prepareTransaction } from "@/lib/utils";
 import type { TokenBalanceEntry } from "@/types/api";
-import { QUERY_KEYS, USDC_DECIMALS } from "@/constants";
+import { USDC_DECIMALS } from "@/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { useAmountValidation } from "@/hooks/useAmountValidation";
 import { createAriaDescribedBy } from "@/lib/formUtils";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface DepositFormProps {
   baseAsset: string;
@@ -28,7 +27,7 @@ export function DepositForm({ baseAsset }: DepositFormProps) {
   const depositMutation = useDeposit();
   const { publicKey, sendTransaction } = useWallet();
   const { connection } = useConnection();
-  const queryClient = useQueryClient();
+  const { invalidateDashboardData } = useRefetchData();
 
   const validation = useAmountValidation({
     amount: depositAmount,
@@ -72,14 +71,7 @@ export function DepositForm({ baseAsset }: DepositFormProps) {
 
             setDepositAmount("");
 
-            setTimeout(() => {
-              queryClient.invalidateQueries({
-                queryKey: QUERY_KEYS.metrics,
-              });
-              queryClient.invalidateQueries({
-                queryKey: QUERY_KEYS.tokenBalances,
-              });
-            }, 500);
+            invalidateDashboardData({ delay: 500 });
           } finally {
             setIsDepositing(false);
           }
@@ -99,7 +91,7 @@ export function DepositForm({ baseAsset }: DepositFormProps) {
       publicKey,
       connection,
       sendTransaction,
-      queryClient,
+      invalidateDashboardData,
     ]
   );
 

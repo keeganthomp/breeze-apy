@@ -7,7 +7,7 @@ import {
 import { QUERY_KEYS } from "@/constants";
 
 type UseTokenBalancesParams = {
-  userId: string;
+  userId: string | null | undefined;
   enabled?: boolean;
 };
 
@@ -16,7 +16,9 @@ export function useTokenBalances({
   enabled = true,
 }: UseTokenBalancesParams) {
   return useQuery({
-    queryKey: QUERY_KEYS.tokenBalances,
+    queryKey: userId
+      ? QUERY_KEYS.tokenBalances.byUser(userId)
+      : QUERY_KEYS.tokenBalances.all,
     queryFn: async (): Promise<TokenBalancesSuccessResponse> => {
       if (!userId) {
         throw new Error("Unable to load token balances: userId is required");
@@ -39,6 +41,6 @@ export function useTokenBalances({
         balances: payload.balances,
       };
     },
-    enabled: enabled && !!userId,
+    enabled: Boolean(enabled && userId),
   });
 }
