@@ -54,6 +54,16 @@ export type MetricsSummary = {
   totalPositionValue?: number;
   lastUpdated?: string;
   baseAsset?: string;
+  fundName?: string;
+  entryDate?: string;
+  daysInFund?: number;
+};
+
+export type MetricsHistoryPoint = {
+  timestamp: string;
+  apy: number;
+  positionValue: number;
+  yieldEarned: number;
 };
 
 export type TokenBalanceEntry = {
@@ -75,6 +85,7 @@ export type MetricsSuccessPayload = {
   userId: string;
   fundId?: string;
   summary: MetricsSummary;
+  history: MetricsHistoryPoint[];
   raw: {
     userYield: UserYield;
   };

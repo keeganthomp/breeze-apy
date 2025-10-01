@@ -8,6 +8,7 @@ export { APYCard } from "./APYCard";
 export { PortfolioValueCard } from "./PortfolioValueCard";
 export { WithdrawModal } from "./WithdrawModal";
 export { StatsCard } from "./StatsCard";
+export { CapitalStatusCard } from "./CapitalStatusCard";
 
 // Sub-components
 export { DepositForm } from "./DepositForm";

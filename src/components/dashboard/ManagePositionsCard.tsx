@@ -26,7 +26,7 @@ export function ManagePositionsCard({
           Allocate more capital into the Breeze fund to increase your returns
         </p>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-2">
         <DepositForm baseAsset={baseAsset} balances={tokenBalances} />
       </CardContent>
     </Card>
