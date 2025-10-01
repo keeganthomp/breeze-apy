@@ -17,11 +17,12 @@ type BreezeYieldData = UserYield["data"][number];
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { userId?: string } }
+  context: { params: Promise<{ userId: string }> }
 ) {
   const { fund: defaultFund } = getDefaultBreezeContext();
 
-  const userId = params.userId?.trim();
+  const { userId: rawUserId } = await context.params;
+  const userId = rawUserId?.trim();
   const fundId = defaultFund.id;
 
   if (!userId || !fundId) {

@@ -1,6 +1,6 @@
 # Breeze APY Dashboard
 
-A Next.js dashboard that allows anyone to connect with a Solana wallet, pull yield metrics through the Breeze SDK, and surfaces portfolio actions like deposits and withdrawals in a simple UI.
+A Next.js yield dashboard that allows anyone to connect their Solana wallet, deposit and withdrawal USDC to earn yield, and view their yield metrics.
 
 ## Prerequisites
 - Node.js 18.17+ (shipped npm is fine)
@@ -35,3 +35,4 @@ The app serves on http://localhost:3000. Connect your wallet via the modal to lo
 ## Project Notes
 - React Query caches portfolio metrics and token balances; use the in-app refresh control or rerun queries by refreshing the page.
 - UI components are built with Tailwind CSS utilities, Shadcdn components, and Lucide icons.
+- Deposits and withdrawals trigger an immediate refetch so dashboard metrics update as soon as your transaction is signed.

@@ -15,9 +15,10 @@ type BreezeYieldBalance = BreezeBalanceData["yield_balance"];
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { userId?: string } }
+  context: { params: Promise<{ userId: string }> }
 ) {
-  const userId = params.userId?.trim();
+  const { userId: rawUserId } = await context.params;
+  const userId = rawUserId?.trim();
 
   if (!userId) {
     return NextResponse.json<TokenBalancesErrorResponse>(
