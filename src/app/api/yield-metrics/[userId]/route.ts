@@ -48,6 +48,9 @@ export async function GET(
     // unsure if we always want the first entry - but this is what I see in the API response consistantly
     const yieldEntry = yieldEntries[0];
 
+    // The types exported from the Breeze SDK do not match the types in the API response.
+    // This function is a workaround to get the property from the yield entry while maintaining type safety.
+    // ew
     const totalPositionValue =
       toNumberOrUndefined(yieldEntry?.position_value) ?? 0;
     const currentApy = toNumberOrUndefined(yieldEntry?.apy) ?? 0;
