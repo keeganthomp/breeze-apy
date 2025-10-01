@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatNumber, formatPercent, slicePublicKey } from "@/lib/utils";
 import type { MetricsSuccessResponse, TokenBalanceEntry } from "@/types/api";
-import type { CapitalBreakdown } from "./CapitalStatusCard";
+import type { CapitalBreakdown } from "@/lib/dashboardMetrics";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { useWallet } from "@solana/wallet-adapter-react";

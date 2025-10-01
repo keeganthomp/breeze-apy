@@ -16,9 +16,15 @@ import {
   AuthGuard,
 } from "@/components/dashboard";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { USDC_DECIMALS, USDC_MINT_ADDRESS } from "@/constants";
+import { USDC_DECIMALS } from "@/constants";
 import { normaliseWithDecimals } from "@/lib/utils";
-import type { CapitalBreakdown } from "@/components/dashboard/CapitalStatusCard";
+import {
+  buildCapitalBreakdown,
+  findBaseAssetTokenBalance,
+  formatLastUpdatedLabel,
+  resolveBaseAssetCode,
+  type CapitalBreakdown,
+} from "@/lib/dashboardMetrics";
 import { Button } from "@/components/ui/button";
 import { Loader2, RotateCw } from "lucide-react";
 
@@ -125,102 +131,38 @@ function DashboardContent() {
     );
   }, [metricsData]);
 
+  const baseAssetCode = useMemo(() => {
+    return resolveBaseAssetCode(metricsData);
+  }, [metricsData]);
+
   const baseAssetTokenBalance = useMemo(() => {
-    if (!tokenBalancesData?.balances?.length) {
-      return null;
-    }
-
-    const baseAssetCode = (() => {
-      const asset = metricsData?.summary.baseAsset;
-      return typeof asset === "string" && asset.trim().length > 0
-        ? asset.toUpperCase()
-        : "USDC";
-    })();
-
-    const matchingEntry = tokenBalancesData.balances.find((entry) => {
-      const symbol = entry.tokenSymbol?.toUpperCase();
-      const name = entry.tokenName?.toUpperCase();
-      return (
-        entry.tokenAddress === USDC_MINT_ADDRESS ||
-        symbol === baseAssetCode ||
-        name === baseAssetCode
-      );
-    });
-
-    return matchingEntry ?? null;
-  }, [metricsData, tokenBalancesData]);
+    return findBaseAssetTokenBalance(
+      tokenBalancesData?.balances,
+      baseAssetCode
+    );
+  }, [tokenBalancesData, baseAssetCode]);
 
   const availableBalance = baseAssetTokenBalance?.normalizedBalance ?? 0;
 
   const capitalBreakdown = useMemo<CapitalBreakdown>(() => {
-    const baseAsset = (() => {
-      const asset = metricsData?.summary.baseAsset;
-      return typeof asset === "string" && asset.trim().length > 0
-        ? asset.trim().toUpperCase()
-        : "USDC";
-    })();
+    return buildCapitalBreakdown({
+      metrics: metricsData,
+      baseAssetBalance: baseAssetTokenBalance,
+      portfolioValue,
+      heldBalanceOverride: availableBalance,
+      defaultDecimals: USDC_DECIMALS,
+    });
+  }, [
+    metricsData,
+    baseAssetTokenBalance,
+    portfolioValue,
+    availableBalance,
+  ]);
 
-    const decimals = baseAssetTokenBalance?.decimals ?? USDC_DECIMALS;
-    const yieldBalance = baseAssetTokenBalance?.yieldBalance ?? null;
-
-    const principal = yieldBalance
-      ? normaliseWithDecimals(yieldBalance.funds, decimals)
-      : portfolioValue;
-
-    const earned = yieldBalance
-      ? normaliseWithDecimals(yieldBalance.amountOfYield, decimals)
-      : metricsData?.summary.totalYieldEarned ?? 0;
-
-    const earningTotal = Math.max(principal + earned, 0);
-    const heldBalance =
-      baseAssetTokenBalance?.normalizedBalance ?? availableBalance;
-    const idle = Math.max(heldBalance - earningTotal, 0);
-    const combined = Math.max(earningTotal + idle, 0);
-
-    const earningPercent = combined > 0 ? (earningTotal / combined) * 100 : 0;
-    const idlePercent = combined > 0 ? (idle / combined) * 100 : 0;
-
-    return {
-      baseAsset,
-      principal,
-      earned,
-      earningTotal,
-      idle,
-      earningPercent,
-      idlePercent,
-    };
-  }, [metricsData, baseAssetTokenBalance, availableBalance, portfolioValue]);
-
+  const lastUpdated = metricsData?.summary.lastUpdated ?? null;
   const lastUpdatedLabel = useMemo(() => {
-    const iso = metricsData?.summary.lastUpdated;
-    if (!iso) {
-      return null;
-    }
-
-    const parsed = new Date(iso);
-    if (Number.isNaN(parsed.getTime())) {
-      return null;
-    }
-
-    const diffMs = Date.now() - parsed.getTime();
-
-    if (diffMs < 60 * 1000) {
-      return "updated just now";
-    }
-
-    const diffMinutes = Math.floor(diffMs / (60 * 1000));
-    if (diffMinutes < 60) {
-      return `updated ${diffMinutes} min${diffMinutes === 1 ? "" : "s"} ago`;
-    }
-
-    const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) {
-      return `updated ${diffHours} hr${diffHours === 1 ? "" : "s"} ago`;
-    }
-
-    const diffDays = Math.floor(diffHours / 24);
-    return `Updated ${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
-  }, [metricsData]);
+    return formatLastUpdatedLabel(lastUpdated);
+  }, [lastUpdated]);
 
   return (
     <>
@@ -228,11 +170,13 @@ function DashboardContent() {
 
       {!shouldShowSkeleton && (
         <div className="flex items-center justify-between gap-4">
-          {lastUpdatedLabel ? (
-            <span className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-              {lastUpdatedLabel}
-            </span>
-          ) : null}
+          <div className="flex-1">
+            {lastUpdatedLabel ? (
+              <span className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                {lastUpdatedLabel}
+              </span>
+            ) : null}
+          </div>
           <Button
             type="button"
             variant="ghost"
