@@ -16,18 +16,7 @@ interface CapitalStatusCardProps {
 }
 
 export function CapitalStatusCard({ breakdown }: CapitalStatusCardProps) {
-  const {
-    baseAsset,
-    principal,
-    earned,
-    earningTotal,
-    idle,
-    earningPercent,
-    idlePercent,
-  } = breakdown;
-
-  const earningWidth = Math.min(Math.max(earningPercent, 0), 100);
-  const idleWidth = Math.min(Math.max(idlePercent, 0), 100 - earningWidth);
+  const { baseAsset, earningTotal, idle, earningPercent } = breakdown;
 
   return (
     <Card className="h-full">
