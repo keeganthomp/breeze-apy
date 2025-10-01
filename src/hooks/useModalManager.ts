@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 
+import { useBodyScrollLock } from "./useBodyScrollLock";
+
 interface UseModalManagerParams {
   isOpen: boolean;
   onClose: () => void;
@@ -13,6 +15,8 @@ export function useModalManager({
 }: UseModalManagerParams) {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  useBodyScrollLock(isOpen);
+
   // Handle focus when modal opens
   useEffect(() => {
     if (!isOpen || !autoFocus) return;
@@ -25,12 +29,9 @@ export function useModalManager({
     return () => window.clearTimeout(timeout);
   }, [isOpen, autoFocus]);
 
-  // Handle body overflow and escape key
+  // Handle escape key to close modal
   useEffect(() => {
     if (!isOpen) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -41,7 +42,6 @@ export function useModalManager({
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);

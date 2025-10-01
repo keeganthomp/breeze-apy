@@ -8,6 +8,7 @@ import { type Wallet, useWallet } from "@solana/wallet-adapter-react";
 
 import { slicePublicKey } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useBodyScrollLock } from "@/hooks";
 
 type WalletConnectModalProps = {
   open: boolean;
@@ -99,6 +100,8 @@ export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
     wallet,
     publicKey,
   } = useWallet();
+
+  useBodyScrollLock(open);
 
   useEffect(() => {
     if (!open) {
