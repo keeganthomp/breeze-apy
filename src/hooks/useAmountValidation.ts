@@ -4,7 +4,7 @@ import { formatNumber } from "@/lib/utils";
 interface UseAmountValidationParams {
   amount: string;
   availableBalance?: number | null;
-  baseAsset: string;
+  assetSymbol: string;
   actionType: "deposit" | "withdraw";
   checkBalance?: boolean;
 }
@@ -12,7 +12,7 @@ interface UseAmountValidationParams {
 export function useAmountValidation({
   amount,
   availableBalance = null,
-  baseAsset,
+  assetSymbol,
   actionType,
   checkBalance = true,
 }: UseAmountValidationParams) {
@@ -41,7 +41,7 @@ export function useAmountValidation({
     if (checkBalance && exceedsBalance && availableBalance !== null) {
       return `Amount exceeds available balance (${formatNumber(
         availableBalance
-      )} ${baseAsset})`;
+      )} ${assetSymbol})`;
     }
 
     return "";
@@ -50,7 +50,7 @@ export function useAmountValidation({
     isPositive,
     exceedsBalance,
     availableBalance,
-    baseAsset,
+    assetSymbol,
     actionType,
     checkBalance,
   ]);

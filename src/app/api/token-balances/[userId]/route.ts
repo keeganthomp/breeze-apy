@@ -8,7 +8,7 @@ import {
   type TokenBalancesSuccessResponse,
 } from "@/types/api";
 import { normaliseWithDecimals, toNumber } from "@/lib/utils";
-import { USDC_MINT_ADDRESS } from "@/constants";
+import { USDC_FUND } from "@/constants";
 
 type BreezeBalanceData = UserBalances["data"][number];
 type BreezeYieldBalance = BreezeBalanceData["yield_balance"];
@@ -36,7 +36,7 @@ export async function GET(
 
     const userBalancesUSDC = await sdk.getUserBalances({
       userId,
-      asset: USDC_MINT_ADDRESS,
+      asset: USDC_FUND.baseAsset.mint,
     });
 
     const mappedBalances = (

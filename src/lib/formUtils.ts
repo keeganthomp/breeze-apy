@@ -4,6 +4,7 @@
 export function createQuickFillHandler(
   balance: number,
   setAmount: (amount: string) => void,
+  decimals: number = 6,
   onAmountChange?: () => void
 ) {
   return (percentage: number) => {
@@ -12,7 +13,8 @@ export function createQuickFillHandler(
     const targetAmount = balance * percentage;
     if (!Number.isFinite(targetAmount) || targetAmount <= 0) return;
 
-    const formatted = Number(targetAmount.toFixed(2)).toString();
+    // Use base asset decimal precision, then remove trailing zeros
+    const formatted = Number(targetAmount.toFixed(decimals)).toString();
     setAmount(formatted);
     onAmountChange?.();
   };

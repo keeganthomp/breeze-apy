@@ -7,18 +7,7 @@ interface CapitalStatusCardProps {
 }
 
 export function CapitalStatusCard({ breakdown }: CapitalStatusCardProps) {
-  const {
-    baseAsset,
-    principal,
-    earned,
-    earningTotal,
-    idle,
-    earningPercent,
-    idlePercent,
-  } = breakdown;
-
-  const earningWidth = Math.min(Math.max(earningPercent, 0), 100);
-  const idleWidth = Math.min(Math.max(idlePercent, 0), 100 - earningWidth);
+  const { baseAsset, principal, idle, earningPercent } = breakdown;
 
   return (
     <Card className="h-full">
@@ -32,7 +21,7 @@ export function CapitalStatusCard({ breakdown }: CapitalStatusCardProps) {
           </span>
         </div>
         <p className="text-sm text-muted-foreground font-light">
-          Snapshot of how your {baseAsset} is allocated across Breeze.
+          Snapshot of how your {baseAsset.symbol} is allocated across Breeze.
         </p>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -42,7 +31,7 @@ export function CapitalStatusCard({ breakdown }: CapitalStatusCardProps) {
               Principal Allocated
             </dt>
             <dd className="text-sm font-semibold text-foreground">
-              ${formatNumber(principal)} {baseAsset}
+              ${formatNumber(principal)} {baseAsset.symbol}
             </dd>
           </div>
           <div className="space-y-1">
@@ -50,7 +39,7 @@ export function CapitalStatusCard({ breakdown }: CapitalStatusCardProps) {
               Idle Capital
             </dt>
             <dd className="text-sm font-semibold text-foreground">
-              ${formatNumber(idle)} {baseAsset}
+              ${formatNumber(idle)} {baseAsset.symbol}
             </dd>
           </div>
         </dl>

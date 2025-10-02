@@ -31,7 +31,7 @@ export function normaliseWithDecimals(
   return factor ? amount / factor : amount;
 }
 
-export function formatNumber(value: number) {
+export function formatNumber(value: number, decimals = 2) {
   if (!Number.isFinite(value)) {
     return "0.00";
   }
@@ -43,14 +43,14 @@ export function formatNumber(value: number) {
     // Parse back to number to use toLocaleString
     const num = parseFloat(str);
     return num.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
     });
   }
 
   return value.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
   });
 }
 

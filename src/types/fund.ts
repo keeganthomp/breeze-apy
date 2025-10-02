@@ -1,6 +1,7 @@
+import type { BaseAssetInfo } from "./api";
+
 export type Fund = {
   id: string;
   name: string;
-  baseAssetMint: string;
-  baseAsset: string;
+  baseAsset: BaseAssetInfo;
 };

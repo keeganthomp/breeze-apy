@@ -22,7 +22,8 @@ export function StatsCard({
 }: StatsCardProps) {
   const { publicKey } = useWallet();
 
-  const baseAsset = capitalBreakdown.baseAsset ?? metrics?.summary.baseAsset ?? "USDC";
+  const baseAsset =
+    capitalBreakdown.baseAsset ?? metrics?.summary.baseAsset ?? "USDC";
   const totalYieldEarned = metrics?.summary.totalYieldEarned ?? 0;
   const currentApy = metrics?.summary.currentApy ?? 0;
   const daysInFund = metrics?.summary.daysInFund;
@@ -125,12 +126,16 @@ export function StatsCard({
           ) : null}
         </div>
         <p className="text-2xl font-semibold text-deep-purple truncate">
-          +{totalYieldEarned} {baseAsset}
+          +{totalYieldEarned} {baseAsset.symbol}
         </p>
         <div className="flex items-center gap-2 text-xs">
-          <span className="font-semibold text-foreground">{baseAsset} Fund</span>
+          <span className="font-semibold text-foreground">
+            {baseAsset.symbol} Fund
+          </span>
           {entryDateLabel ? (
-            <span className="text-muted-foreground/70">Joined {entryDateLabel}</span>
+            <span className="text-muted-foreground/70">
+              Joined {entryDateLabel}
+            </span>
           ) : null}
         </div>
       </CardHeader>
@@ -145,7 +150,7 @@ export function StatsCard({
                 {item.label}
               </dt>
               <dd className="text-sm text-foreground">
-                +{formatNumber(item.value)} {baseAsset}
+                +{formatNumber(item.value)} {baseAsset.symbol}
               </dd>
             </div>
           ))}
@@ -183,7 +188,9 @@ export function StatsCard({
                 <Copy className="h-2 w-2" />
               </Button>
             </div>
-            <span className="font-semibold text-foreground">{fundDisplayName}</span>
+            <span className="font-semibold text-foreground">
+              {fundDisplayName}
+            </span>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -198,7 +205,9 @@ export function StatsCard({
                 <Copy className="h-2 w-2" />
               </Button>
             </div>
-            <span className="font-semibold text-foreground">{userDisplayName}</span>
+            <span className="font-semibold text-foreground">
+              {userDisplayName}
+            </span>
           </div>
         </div>
       </CardContent>

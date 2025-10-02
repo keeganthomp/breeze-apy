@@ -16,13 +16,10 @@ import {
   AuthGuard,
 } from "@/components/dashboard";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { USDC_DECIMALS } from "@/constants";
 import { normaliseWithDecimals } from "@/lib/utils";
 import {
   buildCapitalBreakdown,
-  findBaseAssetTokenBalance,
   formatLastUpdatedLabel,
-  resolveBaseAssetCode,
   type CapitalBreakdown,
 } from "@/lib/dashboardMetrics";
 import { Button } from "@/components/ui/button";
@@ -81,6 +78,7 @@ function DashboardContent() {
   const tokenBalancesLoading =
     isTokenBalancesLoading || isTokenBalancesFetching;
   const metricsInitialLoad = metricsLoading && !metricsData;
+
   const metricsError =
     metricsQueryError instanceof Error
       ? metricsQueryError
@@ -96,7 +94,6 @@ function DashboardContent() {
       : null;
 
   const combinedError = metricsError ?? tokenBalancesError ?? null;
-
   const isWalletRestoring = connecting || (connected && !userId);
 
   const shouldShowSkeleton =
@@ -124,40 +121,32 @@ function DashboardContent() {
   const isRefreshing =
     isManualRefresh || metricsLoading || tokenBalancesLoading;
 
+  const baseAsset = metricsData?.summary.baseAsset;
+
   const portfolioValue = useMemo(() => {
     return normaliseWithDecimals(
       metricsData?.summary.totalPositionValue ?? 0,
-      USDC_DECIMALS
+      baseAsset?.decimals ?? 0
     );
-  }, [metricsData]);
+  }, [metricsData, baseAsset?.decimals]);
 
-  const baseAssetCode = useMemo(() => {
-    return resolveBaseAssetCode(metricsData);
-  }, [metricsData]);
-
-  const baseAssetTokenBalance = useMemo(() => {
-    return findBaseAssetTokenBalance(
-      tokenBalancesData?.balances,
-      baseAssetCode
+  // amount of the base asset the user has in their wallet - NOT deployed in any funds
+  const walletTokenBalance = useMemo(() => {
+    return (
+      tokenBalancesData?.balances?.find(
+        (tokBalance) => tokBalance.tokenAddress === baseAsset?.mint
+      ) ?? null
     );
-  }, [tokenBalancesData, baseAssetCode]);
-
-  const availableBalance = baseAssetTokenBalance?.normalizedBalance ?? 0;
+  }, [tokenBalancesData, baseAsset?.mint]);
 
   const capitalBreakdown = useMemo<CapitalBreakdown>(() => {
     return buildCapitalBreakdown({
       metrics: metricsData,
-      baseAssetBalance: baseAssetTokenBalance,
+      walletTokenBalance,
       portfolioValue,
-      heldBalanceOverride: availableBalance,
-      defaultDecimals: USDC_DECIMALS,
+      defaultDecimals: baseAsset?.decimals ?? 0,
     });
-  }, [
-    metricsData,
-    baseAssetTokenBalance,
-    portfolioValue,
-    availableBalance,
-  ]);
+  }, [metricsData, walletTokenBalance, portfolioValue, baseAsset?.decimals]);
 
   const lastUpdated = metricsData?.summary.lastUpdated ?? null;
   const lastUpdatedLabel = useMemo(() => {
@@ -225,7 +214,7 @@ function DashboardContent() {
                 <PortfolioValueCard
                   metrics={metricsData}
                   portfolioValue={portfolioValue}
-                  availableBalance={availableBalance}
+                  availableBalance={walletTokenBalance?.normalizedBalance ?? 0}
                 />
               </div>
               <div className="flex-1">
@@ -244,7 +233,7 @@ function DashboardContent() {
                 metrics={metricsData}
                 portfolioValue={portfolioValue}
                 capitalBreakdown={capitalBreakdown}
-                baseAssetBalance={baseAssetTokenBalance}
+                baseAssetBalance={walletTokenBalance}
               />
             </div>
           </div>

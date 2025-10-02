@@ -7,6 +7,12 @@ import type {
   UserYield,
 } from "@/lib/breeze";
 
+export type BaseAssetInfo = {
+  mint: string;
+  symbol: string;
+  decimals: number;
+};
+
 export type ApiErrorResponse = {
   success: false;
   error: string;
@@ -53,7 +59,7 @@ export type MetricsSummary = {
   totalYieldEarned: number;
   totalPositionValue?: number;
   lastUpdated?: string;
-  baseAsset?: string;
+  baseAsset: BaseAssetInfo;
   fundName?: string;
   entryDate?: string;
   daysInFund?: number;

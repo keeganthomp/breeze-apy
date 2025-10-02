@@ -12,7 +12,11 @@ export function ManagePositionsCard({
   tokenBalances,
   className,
 }: ManagePositionsCardProps) {
-  const baseAsset = tokenBalances?.[0]?.tokenSymbol ?? "USDC";
+  const baseAsset = {
+    symbol: tokenBalances?.[0]?.tokenSymbol ?? "USDC",
+    decimals: tokenBalances?.[0]?.decimals ?? 0,
+    mint: tokenBalances?.[0]?.tokenAddress ?? "",
+  };
 
   return (
     <Card className={cn("flex h-full flex-col justify-between", className)}>

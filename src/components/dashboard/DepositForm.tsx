@@ -7,14 +7,14 @@ import { Label } from "@/components/ui/label";
 import { useDeposit, useRefetchData } from "@/hooks";
 import { toAtomicUnits, prepareTransaction } from "@/lib/utils";
 import type { TokenBalanceEntry } from "@/types/api";
-import { USDC_DECIMALS } from "@/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { useAmountValidation } from "@/hooks/useAmountValidation";
 import { createAriaDescribedBy } from "@/lib/formUtils";
+import { BaseAssetInfo } from "@/types/api";
 
 interface DepositFormProps {
-  baseAsset: string;
+  baseAsset: BaseAssetInfo;
   balances: TokenBalanceEntry[] | null;
 }
 
@@ -31,7 +31,7 @@ export function DepositForm({ baseAsset }: DepositFormProps) {
 
   const validation = useAmountValidation({
     amount: depositAmount,
-    baseAsset,
+    assetSymbol: baseAsset.symbol,
     actionType: "deposit",
     checkBalance: false, // Don't check balance for deposits
   });
@@ -55,7 +55,7 @@ export function DepositForm({ baseAsset }: DepositFormProps) {
         (async () => {
           try {
             setIsDepositing(true);
-            const decimals = USDC_DECIMALS;
+            const decimals = baseAsset.decimals;
             const atomicAmount = toAtomicUnits(
               validation.parsedAmount,
               decimals
@@ -102,7 +102,7 @@ export function DepositForm({ baseAsset }: DepositFormProps) {
       <form className="space-y-3" onSubmit={handleDeposit} noValidate>
         <div className="space-y-2">
           <Label htmlFor={amountInputId} className="text-sm font-medium">
-            Deposit {baseAsset}
+            Deposit {baseAsset.symbol}
           </Label>
           <div className="flex gap-2 items-center">
             <Input

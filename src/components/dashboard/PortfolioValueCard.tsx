@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
 import { WithdrawModal } from "./WithdrawModal";
 import type { MetricsSuccessResponse } from "@/types/api";
+import { USDC_FUND } from "@/constants";
 
 interface PortfolioValueCardProps {
   metrics: MetricsSuccessResponse | null;
@@ -18,8 +19,8 @@ export function PortfolioValueCard({
   portfolioValue,
   availableBalance,
 }: PortfolioValueCardProps) {
-  const baseAsset = metrics?.summary.baseAsset ?? "USDC";
-  const fundId = metrics?.fundId;
+  const baseAsset = metrics?.summary.baseAsset ?? USDC_FUND.baseAsset;
+  const fundId = metrics?.fundId ?? USDC_FUND.id;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = useCallback(() => {

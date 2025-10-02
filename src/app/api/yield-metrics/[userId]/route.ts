@@ -12,7 +12,7 @@ import {
   toNormalisedYield,
   diffInDays,
 } from "@/lib/utils";
-import { USDC_DECIMALS } from "@/constants";
+import { USDC_FUND } from "@/constants";
 
 export async function GET(
   _request: NextRequest,
@@ -45,24 +45,19 @@ export async function GET(
     });
 
     const yieldEntries = userYield.data ?? [];
-    // unsure if we always want the first entry - but this is what I see in the API response consistantly
-    const yieldEntry = yieldEntries[0];
+    const fundMetrics = yieldEntries.find((entry) => entry.fund_id === fundId);
 
-    // The types exported from the Breeze SDK do not match the types in the API response.
-    // This function is a workaround to get the property from the yield entry while maintaining type safety.
-    // ew
     const totalPositionValue =
-      toNumberOrUndefined(yieldEntry?.position_value) ?? 0;
-    const currentApy = toNumberOrUndefined(yieldEntry?.apy) ?? 0;
-    const lastUpdated = toStringOrUndefined(yieldEntry?.last_updated);
-    const baseAsset = toStringOrUndefined(yieldEntry?.base_asset);
-    const fundName = toStringOrUndefined(yieldEntry?.fund_name);
-    const entryDate = toStringOrUndefined(yieldEntry?.entry_date);
+      toNumberOrUndefined(fundMetrics?.position_value) ?? 0;
+    const currentApy = toNumberOrUndefined(fundMetrics?.apy) ?? 0;
+    const lastUpdated = toStringOrUndefined(fundMetrics?.last_updated);
+    const fundName = toStringOrUndefined(fundMetrics?.fund_name);
+    const entryDate = toStringOrUndefined(fundMetrics?.entry_date);
     const totalYieldEarned = toNormalisedYield(
-      yieldEntry?.yield_earned,
-      USDC_DECIMALS
+      fundMetrics?.yield_earned,
+      USDC_FUND.baseAsset.decimals
     );
-    const daysInFund = diffInDays(entryDate, lastUpdated);
+    const daysInFund = diffInDays(entryDate, new Date().toISOString());
 
     const history = yieldEntries
       .map((entry) => {
@@ -79,7 +74,10 @@ export async function GET(
           timestamp: timestamp ?? pointEntryDate!,
           apy: apy ?? 0,
           positionValue: positionValue ?? 0,
-          yieldEarned: toNormalisedYield(entry.yield_earned, USDC_DECIMALS),
+          yieldEarned: toNormalisedYield(
+            entry.yield_earned,
+            USDC_FUND.baseAsset.decimals
+          ),
         };
       })
       .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
@@ -102,7 +100,7 @@ export async function GET(
         totalYieldEarned,
         totalPositionValue,
         lastUpdated,
-        baseAsset,
+        baseAsset: USDC_FUND.baseAsset,
         fundName,
         entryDate,
         daysInFund,

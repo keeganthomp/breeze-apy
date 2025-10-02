@@ -18,12 +18,12 @@ import {
   createAriaDescribedBy,
 } from "@/lib/formUtils";
 
-import { USDC_DECIMALS } from "@/constants";
+import { BaseAssetInfo } from "@/types/api";
 
 interface WithdrawModalProps {
   isOpen: boolean;
   onClose: () => void;
-  baseAsset: string;
+  baseAsset: BaseAssetInfo;
   fundId?: string | null;
   availableBalance: number;
 }
@@ -63,7 +63,7 @@ export function WithdrawModal({
   const validation = useAmountValidation({
     amount: withdrawAmount,
     availableBalance,
-    baseAsset,
+    assetSymbol: baseAsset.symbol,
     actionType: "withdraw",
   });
 
@@ -77,8 +77,11 @@ export function WithdrawModal({
   const isSubmitDisabled = !fundId || !validation.isValid;
 
   const helperMessage = hasAvailableBalance
-    ? `Available to withdraw: ${formatNumber(availableBalance)} ${baseAsset}`
-    : `Enter the amount you want to withdraw in ${baseAsset}.`;
+    ? `Available to withdraw: ${formatNumber(
+        availableBalance,
+        baseAsset.decimals
+      )} ${baseAsset.symbol}`
+    : `Enter the amount you want to withdraw in ${baseAsset.symbol}.`;
 
   const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -99,7 +102,7 @@ export function WithdrawModal({
         (async () => {
           const atomicAmount = toAtomicUnits(
             validation.parsedAmount,
-            USDC_DECIMALS
+            baseAsset.decimals
           );
 
           const { transaction } = await withdrawMutation.mutateAsync({
@@ -131,12 +134,14 @@ export function WithdrawModal({
       sendTransaction,
       handleRequestClose,
       invalidateDashboardData,
+      baseAsset.decimals,
     ]
   );
 
   const handleQuickFill = createQuickFillHandler(
     availableBalance,
     setWithdrawAmount,
+    baseAsset.decimals,
     () => setHasBlurredAmount(false)
   );
 
@@ -187,7 +192,7 @@ export function WithdrawModal({
               htmlFor={amountInputId}
               className="text-sm font-medium text-deep-purple"
             >
-              Withdraw Amount ({baseAsset})
+              Withdraw Amount ({baseAsset.symbol})
             </Label>
             <Input
               id={amountInputId}

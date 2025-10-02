@@ -1,12 +1,11 @@
-import { USDC_DECIMALS, USDC_MINT_ADDRESS } from "@/constants";
 import { normaliseWithDecimals } from "@/lib/utils";
-import type {
-  MetricsSuccessResponse,
-  TokenBalanceEntry,
-} from "@/types/api";
+import type { MetricsSuccessResponse, TokenBalanceEntry } from "@/types/api";
+import { BaseAssetInfo } from "@/types/api";
+
+import { USDC_FUND } from "@/constants";
 
 export type CapitalBreakdown = {
-  baseAsset: string;
+  baseAsset: BaseAssetInfo;
   principal: number;
   earned: number;
   earningTotal: number;
@@ -15,42 +14,9 @@ export type CapitalBreakdown = {
   idlePercent: number;
 };
 
-export function resolveBaseAssetCode(metrics: MetricsSuccessResponse | null) {
-  const asset = metrics?.summary.baseAsset;
-  if (typeof asset === "string" && asset.trim().length > 0) {
-    return asset.trim().toUpperCase();
-  }
-
-  return "USDC";
-}
-
-export function findBaseAssetTokenBalance(
-  balances: TokenBalanceEntry[] | null | undefined,
-  baseAssetCode: string
-) {
-  if (!balances || balances.length === 0) {
-    return null;
-  }
-
-  const target = baseAssetCode.toUpperCase();
-
-  return (
-    balances.find((entry) => {
-      const symbol = entry.tokenSymbol?.toUpperCase();
-      const name = entry.tokenName?.toUpperCase();
-
-      return (
-        entry.tokenAddress === USDC_MINT_ADDRESS ||
-        symbol === target ||
-        name === target
-      );
-    }) ?? null
-  );
-}
-
 type BuildCapitalBreakdownParams = {
   metrics: MetricsSuccessResponse | null;
-  baseAssetBalance: TokenBalanceEntry | null;
+  walletTokenBalance: TokenBalanceEntry | null;
   portfolioValue: number;
   heldBalanceOverride?: number;
   defaultDecimals?: number;
@@ -58,14 +24,13 @@ type BuildCapitalBreakdownParams = {
 
 export function buildCapitalBreakdown({
   metrics,
-  baseAssetBalance,
+  walletTokenBalance,
   portfolioValue,
-  heldBalanceOverride,
-  defaultDecimals = USDC_DECIMALS,
+  defaultDecimals = USDC_FUND.baseAsset.decimals,
 }: BuildCapitalBreakdownParams): CapitalBreakdown {
-  const baseAsset = resolveBaseAssetCode(metrics);
-  const decimals = baseAssetBalance?.decimals ?? defaultDecimals;
-  const yieldBalance = baseAssetBalance?.yieldBalance ?? null;
+  const baseAsset = metrics?.summary.baseAsset;
+  const decimals = walletTokenBalance?.decimals ?? defaultDecimals;
+  const yieldBalance = walletTokenBalance?.yieldBalance ?? null;
 
   const principal = yieldBalance
     ? normaliseWithDecimals(yieldBalance.funds, decimals)
@@ -76,22 +41,18 @@ export function buildCapitalBreakdown({
     : metrics?.summary.totalYieldEarned ?? 0;
 
   const earningTotal = Math.max(principal + earned, 0);
-  const heldBalance =
-    typeof heldBalanceOverride === "number"
-      ? heldBalanceOverride
-      : baseAssetBalance?.normalizedBalance ?? 0;
-  const idle = Math.max(heldBalance - earningTotal, 0);
-  const combined = Math.max(earningTotal + idle, 0);
+  const heldBalance = walletTokenBalance?.normalizedBalance ?? 0;
+  const combined = Math.max(earningTotal + heldBalance, 0);
 
   const earningPercent = combined > 0 ? (earningTotal / combined) * 100 : 0;
-  const idlePercent = combined > 0 ? (idle / combined) * 100 : 0;
+  const idlePercent = combined > 0 ? (heldBalance / combined) * 100 : 0;
 
   return {
-    baseAsset,
+    baseAsset: baseAsset ?? USDC_FUND.baseAsset,
     principal,
     earned,
     earningTotal,
-    idle,
+    idle: heldBalance,
     earningPercent,
     idlePercent,
   };
