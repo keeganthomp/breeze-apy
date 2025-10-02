@@ -36,17 +36,6 @@ export function CapitalStatusCard({ breakdown }: CapitalStatusCardProps) {
         </p>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full bg-bright-pink/80"
-            style={{ width: `${earningWidth}%` }}
-          />
-          <div
-            className="h-full bg-muted-foreground/20"
-            style={{ width: `${idleWidth}%` }}
-          />
-        </div>
-
         <dl className="grid gap-4 text-xs sm:grid-cols-2">
           <div className="space-y-1">
             <dt className="uppercase tracking-[0.18em] text-muted-foreground">
@@ -54,22 +43,6 @@ export function CapitalStatusCard({ breakdown }: CapitalStatusCardProps) {
             </dt>
             <dd className="text-sm font-semibold text-foreground">
               ${formatNumber(principal)} {baseAsset}
-            </dd>
-          </div>
-          <div className="space-y-1">
-            <dt className="uppercase tracking-[0.18em] text-muted-foreground">
-              Yield Accrued
-            </dt>
-            <dd className="text-sm font-semibold text-foreground">
-              +{formatNumber(earned)} {baseAsset}
-            </dd>
-          </div>
-          <div className="space-y-1">
-            <dt className="uppercase tracking-[0.18em] text-muted-foreground">
-              Currently Earning
-            </dt>
-            <dd className="text-sm font-semibold text-foreground">
-              ${formatNumber(earningTotal)} {baseAsset}
             </dd>
           </div>
           <div className="space-y-1">
