@@ -5,6 +5,7 @@ import Image from "next/image";
 import { createPortal } from "react-dom";
 import { WalletReadyState } from "@solana/wallet-adapter-base";
 import { type Wallet, useWallet } from "@solana/wallet-adapter-react";
+import { Loader2 } from "lucide-react";
 
 import { slicePublicKey } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -20,19 +21,17 @@ const WalletOption = ({
   connected,
   connectedWallet,
   pendingWallet,
-  connecting,
   onClick,
 }: {
   wallet: Wallet;
   connected: boolean;
   connectedWallet: Wallet | null;
   pendingWallet: string | null;
-  connecting: boolean;
   onClick: (wallet: Wallet) => void;
 }) => {
   const { adapter, readyState } = wallet;
   const isActive = connected && connectedWallet?.adapter.name === adapter.name;
-  const isPending = pendingWallet === adapter.name || connecting;
+  const isPending = pendingWallet === adapter.name;
   const canConnect =
     readyState === WalletReadyState.Installed ||
     readyState === WalletReadyState.Loadable;
@@ -74,13 +73,17 @@ const WalletOption = ({
         </span>
       </span>
       <span className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-400">
-        {isPending
-          ? "Connecting"
-          : canConnect
-          ? isActive
-            ? "Active"
-            : "Connect"
-          : "Install"}
+        {isPending ? (
+          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+        ) : canConnect ? (
+          isActive ? (
+            "Active"
+          ) : (
+            "Connect"
+          )
+        ) : (
+          "Install"
+        )}
         {isActive && <span className="size-2 rounded-full bg-green-500" />}
       </span>
     </button>
@@ -90,16 +93,8 @@ const WalletOption = ({
 export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
   const [pendingWallet, setPendingWallet] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const {
-    wallets,
-    select,
-    connect,
-    disconnect,
-    connected,
-    connecting,
-    wallet,
-    publicKey,
-  } = useWallet();
+  const { wallets, select, connect, disconnect, connected, wallet, publicKey } =
+    useWallet();
 
   useBodyScrollLock(open);
 
@@ -238,7 +233,6 @@ export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
               connected={connected}
               connectedWallet={wallet}
               pendingWallet={pendingWallet}
-              connecting={connecting}
               onClick={handleWalletClick}
             />
           ))}
