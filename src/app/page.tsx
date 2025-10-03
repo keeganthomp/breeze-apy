@@ -16,7 +16,7 @@ import {
   AuthGuard,
 } from "@/components/dashboard";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { normaliseWithDecimals } from "@/lib/utils";
+import { normaliseWithDecimals, toAtomicUnits } from "@/lib/utils";
 import {
   buildCapitalBreakdown,
   formatLastUpdatedLabel,
@@ -214,7 +214,12 @@ function DashboardContent() {
                 <PortfolioValueCard
                   metrics={metricsData}
                   portfolioValue={portfolioValue}
-                  availableBalance={walletTokenBalance?.normalizedBalance ?? 0}
+                    availableBalance={
+                    normaliseWithDecimals(
+                      walletTokenBalance?.yieldBalance?.funds ?? 0,
+                      baseAsset?.decimals ?? 0
+                    )
+                  }
                 />
               </div>
               <div className="flex-1">

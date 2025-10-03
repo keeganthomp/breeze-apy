@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDeposit, useRefetchData } from "@/hooks";
 import { toAtomicUnits, prepareTransaction } from "@/lib/utils";
+import BigNumber from "bignumber.js";
 import type { TokenBalanceEntry } from "@/types/api";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useConnection } from "@solana/wallet-adapter-react";
@@ -43,8 +44,9 @@ export function DepositForm({
   const handleSetMax = useCallback(() => {
     if (availableAmount > 0) {
       // adding decimal buffer of 2 for conveniently preventing rounding errors easily
-      const precision = Math.max(baseAsset.decimals - 2, 0);
-      const roundedAmount = Number(availableAmount.toFixed(precision));
+      const precision = BigNumber.max(baseAsset.decimals - 2, 0).toNumber();
+      const availableAmountBN = new BigNumber(availableAmount);
+      const roundedAmount = availableAmountBN.dp(precision);
       setDepositAmount(roundedAmount.toString());
     }
   }, [availableAmount, baseAsset.decimals]);

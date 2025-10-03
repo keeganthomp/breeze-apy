@@ -1,3 +1,5 @@
+import BigNumber from "bignumber.js";
+
 /**
  * Creates percentage-based quick fill options for forms
  */
@@ -10,11 +12,15 @@ export function createQuickFillHandler(
   return (percentage: number) => {
     if (!Number.isFinite(balance) || balance <= 0) return;
 
-    const targetAmount = balance * percentage;
-    if (!Number.isFinite(targetAmount) || targetAmount <= 0) return;
+    // Use BigNumber for precise percentage calculation
+    const balanceBN = new BigNumber(balance);
+    const percentageBN = new BigNumber(percentage);
+    const targetAmountBN = balanceBN.multipliedBy(percentageBN);
+
+    if (targetAmountBN.isLessThanOrEqualTo(0)) return;
 
     // Use base asset decimal precision, then remove trailing zeros
-    const formatted = Number(targetAmount.toFixed(decimals)).toString();
+    const formatted = targetAmountBN.dp(decimals).toString();
     setAmount(formatted);
     onAmountChange?.();
   };
@@ -39,5 +45,12 @@ export const QUICK_FILL_PERCENTAGES = [0.25, 0.5, 0.75, 1] as const;
  * Formats percentage for display (1 -> "Max", others -> "25%")
  */
 export function formatQuickFillLabel(percentage: number): string {
-  return percentage === 1 ? "Max" : `${Math.round(percentage * 100)}%`;
+  if (percentage === 1) return "Max";
+
+  const percentageBN = new BigNumber(percentage);
+  const displayPercent = percentageBN
+    .multipliedBy(100)
+    .integerValue()
+    .toString();
+  return `${displayPercent}%`;
 }

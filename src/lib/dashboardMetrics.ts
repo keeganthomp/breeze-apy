@@ -1,13 +1,15 @@
 import { normaliseWithDecimals } from "@/lib/utils";
 import type { MetricsSuccessResponse, TokenBalanceEntry } from "@/types/api";
 import { BaseAssetInfo } from "@/types/api";
+import BigNumber from "bignumber.js";
 
 import { USDC_FUND } from "@/constants";
 
-// Helper function to handle precise decimal arithmetic
+// Helper function to handle precise decimal arithmetic using BigNumber
 function preciseSubtract(a: number, b: number, decimals: number = 6): number {
-  const factor = Math.pow(10, decimals);
-  return Math.round(a * factor - b * factor) / factor;
+  const aBN = new BigNumber(a);
+  const bBN = new BigNumber(b);
+  return aBN.minus(bBN).dp(decimals).toNumber();
 }
 
 export type CapitalBreakdown = {
@@ -48,13 +50,28 @@ export function buildCapitalBreakdown({
     ? normaliseWithDecimals(yieldBalance.amountOfYield, decimals)
     : metrics?.summary.totalYieldEarned ?? 0;
 
-  const idleCapital = preciseSubtract(totalBalance, principal + earned, decimals - 1);
+  // Calculate earningTotal using BigNumber for precision
+  const principalBN = new BigNumber(principal);
+  const earnedBN = new BigNumber(earned);
+  const earningTotalBN = principalBN.plus(earnedBN);
+  const earningTotal = BigNumber.max(earningTotalBN, 0).toNumber();
 
-  const earningTotal = Math.max(principal + earned, 0);
-  const combined = Math.max(earningTotal + idleCapital, 0);
+  const idleCapital = preciseSubtract(totalBalance, earningTotal, decimals);
 
-  const earningPercent = combined > 0 ? (earningTotal / combined) * 100 : 0;
-  const idlePercent = combined > 0 ? (idleCapital / combined) * 100 : 0;
+  // Calculate combined total using BigNumber
+  const idleCapitalBN = new BigNumber(idleCapital);
+  const combinedBN = earningTotalBN.plus(idleCapitalBN);
+  const combined = BigNumber.max(combinedBN, 0).toNumber();
+
+  // Calculate percentages using BigNumber for precision
+  const earningPercent =
+    combined > 0
+      ? new BigNumber(earningTotal).div(combined).multipliedBy(100).toNumber()
+      : 0;
+  const idlePercent =
+    combined > 0
+      ? new BigNumber(idleCapital).div(combined).multipliedBy(100).toNumber()
+      : 0;
 
   return {
     baseAsset: baseAsset ?? USDC_FUND.baseAsset,

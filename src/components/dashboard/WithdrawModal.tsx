@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { formatNumber, prepareTransaction, toAtomicUnits } from "@/lib/utils";
+import { prepareTransaction, toAtomicUnits } from "@/lib/utils";
 import { useRefetchData, useWithdraw } from "@/hooks";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useAmountValidation } from "@/hooks/useAmountValidation";
@@ -77,10 +77,7 @@ export function WithdrawModal({
   const isSubmitDisabled = !fundId || !validation.isValid;
 
   const helperMessage = hasAvailableBalance
-    ? `Available to withdraw: ${formatNumber(
-        availableBalance,
-        baseAsset.decimals
-      )} ${baseAsset.symbol}`
+    ? `Available to withdraw: ${availableBalance} ${baseAsset.symbol}`
     : `Enter the amount you want to withdraw in ${baseAsset.symbol}.`;
 
   const handleSubmit = useCallback(

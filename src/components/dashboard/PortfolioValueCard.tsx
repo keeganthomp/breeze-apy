@@ -38,17 +38,19 @@ export function PortfolioValueCard({
 
   return (
     <Card className="relative h-full">
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="absolute right-3 top-4 rounded-full px-4 text-[0.6rem] font-semibold uppercase tracking-[0.28em] data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-60"
-        onClick={handleOpenModal}
-        aria-disabled={!fundId}
-        data-disabled={!fundId || undefined}
-      >
-        Withdraw
-      </Button>
+      {availableBalance > 0 && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="absolute right-3 top-4 rounded-full px-4 text-[0.6rem] font-semibold uppercase tracking-[0.28em] data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-60"
+          onClick={handleOpenModal}
+          aria-disabled={!fundId}
+          data-disabled={!fundId || undefined}
+        >
+          Withdraw
+        </Button>
+      )}
       <CardHeader className="space-y-6 pb-6">
         <span className="text-xs font-semibold uppercase tracking-[0.32em] text-bright-pink">
           Working Capital

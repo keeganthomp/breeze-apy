@@ -3,6 +3,7 @@ import type { BaseAssetInfo, TokenBalanceEntry } from "@/types/api";
 import { DepositForm } from "./DepositForm";
 import { cn, formatNumber } from "@/lib/utils";
 import { USDC_BASE_ASSET } from "@/constants";
+import BigNumber from "bignumber.js";
 
 interface ManagePositionsCardProps {
   tokenBalances: TokenBalanceEntry[] | null;
@@ -17,8 +18,11 @@ export function ManagePositionsCard({
   baseAsset = USDC_BASE_ASSET,
   className,
 }: ManagePositionsCardProps) {
-  const availableCapital = Math.max(idleCapital, 0);
-  const decimalsForDisplay = Math.max(baseAsset.decimals - 1, 0);
+  const availableCapital = BigNumber.max(idleCapital, 0).toNumber();
+  const decimalsForDisplay = BigNumber.max(
+    baseAsset.decimals - 2,
+    0
+  ).toNumber();
 
   return (
     <Card className={cn("flex h-full flex-col justify-between", className)}>
