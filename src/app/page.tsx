@@ -16,7 +16,7 @@ import {
   AuthGuard,
 } from "@/components/dashboard";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { normaliseWithDecimals, toAtomicUnits } from "@/lib/utils";
+import { normaliseWithDecimals } from "@/lib/utils";
 import {
   buildCapitalBreakdown,
   formatLastUpdatedLabel,
