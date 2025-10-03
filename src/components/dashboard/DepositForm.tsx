@@ -16,9 +16,13 @@ import { BaseAssetInfo } from "@/types/api";
 interface DepositFormProps {
   baseAsset: BaseAssetInfo;
   balances: TokenBalanceEntry[] | null;
+  availableAmount?: number;
 }
 
-export function DepositForm({ baseAsset }: DepositFormProps) {
+export function DepositForm({
+  baseAsset,
+  availableAmount = 0,
+}: DepositFormProps) {
   const amountInputId = useId();
   const errorTextId = `${amountInputId}-error`;
 
@@ -36,6 +40,15 @@ export function DepositForm({ baseAsset }: DepositFormProps) {
     checkBalance: false, // Don't check balance for deposits
   });
 
+  const handleSetMax = useCallback(() => {
+    if (availableAmount > 0) {
+      // adding decimal buffer of 2 for conveniently preventing rounding errors easily
+      const precision = Math.max(baseAsset.decimals - 2, 0);
+      const roundedAmount = Number(availableAmount.toFixed(precision));
+      setDepositAmount(roundedAmount.toString());
+    }
+  }, [availableAmount, baseAsset.decimals]);
+
   const shouldShowValidation = Boolean(
     validation.validationMessage && depositMutation.isError
   );
@@ -46,7 +59,7 @@ export function DepositForm({ baseAsset }: DepositFormProps) {
 
       if (!validation.isValid) {
         if (!validation.isPositive) {
-          toast.error(`Enter a positive ${baseAsset} amount`);
+          toast.error(`Enter a positive ${baseAsset.symbol} amount`);
         }
         return;
       }
@@ -105,24 +118,36 @@ export function DepositForm({ baseAsset }: DepositFormProps) {
             Deposit {baseAsset.symbol}
           </Label>
           <div className="flex gap-2 items-center">
-            <Input
-              id={amountInputId}
-              value={depositAmount}
-              disabled={isDepositing}
-              onChange={(event) => setDepositAmount(event.target.value)}
-              type="number"
-              min="0"
-              step="0.01"
-              inputMode="decimal"
-              enterKeyHint="done"
-              autoComplete="off"
-              placeholder="0.00"
-              className="flex-1 bg-white py-6 px-3 text-lg"
-              aria-invalid={shouldShowValidation || undefined}
-              aria-describedby={createAriaDescribedBy([
-                shouldShowValidation ? errorTextId : null,
-              ])}
-            />
+            <div className="flex-1 relative">
+              <Input
+                id={amountInputId}
+                value={depositAmount}
+                disabled={isDepositing}
+                onChange={(event) => setDepositAmount(event.target.value)}
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                enterKeyHint="done"
+                autoComplete="off"
+                placeholder="0.00"
+                className="bg-white py-6 px-3 text-lg pr-12"
+                aria-invalid={shouldShowValidation || undefined}
+                aria-describedby={createAriaDescribedBy([
+                  shouldShowValidation ? errorTextId : null,
+                ])}
+              />
+              {availableAmount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleSetMax}
+                  disabled={isDepositing}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed px-1.5 py-1"
+                >
+                  MAX
+                </button>
+              )}
+            </div>
             <Button
               type="submit"
               className="px-6 bg-accent-pink hover:bg-accent-pink/90 disabled:bg-accent-pink/80 h-12"

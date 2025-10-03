@@ -4,6 +4,12 @@ import { BaseAssetInfo } from "@/types/api";
 
 import { USDC_FUND } from "@/constants";
 
+// Helper function to handle precise decimal arithmetic
+function preciseSubtract(a: number, b: number, decimals: number = 6): number {
+  const factor = Math.pow(10, decimals);
+  return Math.round(a * factor - b * factor) / factor;
+}
+
 export type CapitalBreakdown = {
   baseAsset: BaseAssetInfo;
   principal: number;
@@ -42,8 +48,7 @@ export function buildCapitalBreakdown({
     ? normaliseWithDecimals(yieldBalance.amountOfYield, decimals)
     : metrics?.summary.totalYieldEarned ?? 0;
 
-  // this value seems incorrect - I expect this to be the wallet balance, but appears to be the same as the principal (fund balance)
-  const idleCapital = totalBalance - principal;
+  const idleCapital = preciseSubtract(totalBalance, principal + earned, decimals - 1);
 
   const earningTotal = Math.max(principal + earned, 0);
   const combined = Math.max(earningTotal + idleCapital, 0);

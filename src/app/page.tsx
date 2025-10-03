@@ -223,6 +223,8 @@ function DashboardContent() {
                   <ManagePositionsCard
                     tokenBalances={tokenBalancesData?.balances ?? null}
                     className="flex-1"
+                    idleCapital={capitalBreakdown.idle}
+                    baseAsset={capitalBreakdown.baseAsset}
                   />
                 </div>
               </div>

@@ -73,7 +73,9 @@ export const slicePublicKey = (publicKey?: string) => {
 };
 
 export function toAtomicUnits(value: number, decimals: number) {
-  return value * 10 ** decimals;
+  // Use precise arithmetic to avoid floating-point errors
+  const factor = Math.pow(10, decimals);
+  return Math.round(value * factor);
 }
 
 export const prepareTransaction = (txn: string) => {

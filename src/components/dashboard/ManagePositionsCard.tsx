@@ -1,22 +1,24 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import type { TokenBalanceEntry } from "@/types/api";
+import type { BaseAssetInfo, TokenBalanceEntry } from "@/types/api";
 import { DepositForm } from "./DepositForm";
-import { cn } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
+import { USDC_BASE_ASSET } from "@/constants";
 
 interface ManagePositionsCardProps {
   tokenBalances: TokenBalanceEntry[] | null;
+  idleCapital?: number;
+  baseAsset?: BaseAssetInfo;
   className?: string;
 }
 
 export function ManagePositionsCard({
   tokenBalances,
+  idleCapital = 0,
+  baseAsset = USDC_BASE_ASSET,
   className,
 }: ManagePositionsCardProps) {
-  const baseAsset = {
-    symbol: tokenBalances?.[0]?.tokenSymbol ?? "USDC",
-    decimals: tokenBalances?.[0]?.decimals ?? 0,
-    mint: tokenBalances?.[0]?.tokenAddress ?? "",
-  };
+  const availableCapital = Math.max(idleCapital, 0);
+  const decimalsForDisplay = Math.max(baseAsset.decimals - 1, 0);
 
   return (
     <Card className={cn("flex h-full flex-col justify-between", className)}>
@@ -31,7 +33,17 @@ export function ManagePositionsCard({
         </p>
       </CardHeader>
       <CardContent className="space-y-2">
-        <DepositForm baseAsset={baseAsset} balances={tokenBalances} />
+        <DepositForm
+          baseAsset={baseAsset}
+          balances={tokenBalances}
+          availableAmount={availableCapital}
+        />
+        {availableCapital > 0 && (
+          <p className="text-xs text-muted-foreground font-light">
+            {formatNumber(availableCapital, decimalsForDisplay)}{" "}
+            {baseAsset.symbol} available
+          </p>
+        )}
       </CardContent>
     </Card>
   );
