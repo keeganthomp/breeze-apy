@@ -31,6 +31,8 @@ export function buildCapitalBreakdown({
   const baseAsset = metrics?.summary.baseAsset;
   const decimals = walletTokenBalance?.decimals ?? defaultDecimals;
   const yieldBalance = walletTokenBalance?.yieldBalance ?? null;
+  // amount in fund + amount in wallet
+  const totalBalance = walletTokenBalance?.normalizedBalance ?? 0;
 
   const principal = yieldBalance
     ? normaliseWithDecimals(yieldBalance.funds, decimals)
@@ -41,7 +43,7 @@ export function buildCapitalBreakdown({
     : metrics?.summary.totalYieldEarned ?? 0;
 
   // this value seems incorrect - I expect this to be the wallet balance, but appears to be the same as the principal (fund balance)
-  const idleCapital = walletTokenBalance?.normalizedBalance ?? 0;
+  const idleCapital = totalBalance - principal;
 
   const earningTotal = Math.max(principal + earned, 0);
   const combined = Math.max(earningTotal + idleCapital, 0);
